@@ -113,7 +113,7 @@
             </tr>
         </thead>
         <tbody>
-            @php 
+            @php
                 $totalPending = 0;
                 $totalOverdue = 0;
                 $totalNotDue = 0;
@@ -164,4 +164,4 @@
         <p>This is a computer-generated document. No signature is required.</p>
     </div>
 </body>
-</html> 
+</html>

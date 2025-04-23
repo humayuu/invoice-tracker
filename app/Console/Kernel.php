@@ -9,6 +9,7 @@ class Kernel extends ConsoleKernel
 {
     protected $commands = [
         Commands\UpdateInvoiceStatuses::class,
+        Commands\CheckOverdueInvoices::class,
     ];
 
     /**
@@ -18,6 +19,8 @@ class Kernel extends ConsoleKernel
     {
         // Run the invoice status update command daily at midnight
         $schedule->command('invoices:update-status')->daily();
+        // Check for overdue invoices daily at 9 AM
+        $schedule->command('invoices:check-overdue')->dailyAt('09:00');
     }
 
     /**

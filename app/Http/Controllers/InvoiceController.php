@@ -123,4 +123,24 @@ class InvoiceController extends Controller
         $exists = Invoice::where('invoice_no', $invoice_no)->exists();
         return response()->json(!$exists); // Return true if it DOESN'T exist (is valid)
     }
+
+    public function checkOverdueInvoices()
+    {
+        $now = Carbon::now();
+        $overdueInvoices = Invoice::with('client')
+            ->where('status', 'pending')
+            ->where('due_date', '<', $now->format('Y-m-d'))
+            ->get()
+            ->map(function ($invoice) {
+                return [
+                    'invoice_no' => $invoice->invoice_no,
+                    'client_name' => $invoice->client->client_name,
+                    'amount' => number_format($invoice->amount, 2),
+                    'due_date' => Carbon::parse($invoice->due_date)->format('d/m/Y'),
+                    'days_overdue' => Carbon::now()->diffInDays($invoice->due_date)
+                ];
+            });
+
+        return response()->json($overdueInvoices);
+    }
 }

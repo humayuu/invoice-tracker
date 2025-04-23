@@ -1,6 +1,53 @@
 @extends('layout.app')
 @section('main')
 
+<script>
+function checkOverdueInvoices() {
+    // Check if browser supports notifications
+    if (!("Notification" in window)) {
+        console.log("This browser does not support desktop notification");
+        return;
+    }
+
+    // Check notification permission
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+
+    // Function to check overdue invoices
+    function checkInvoices() {
+        const rows = document.querySelectorAll('#datatable tbody tr');
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const invoiceNo = row.querySelector('td:nth-child(3)').textContent;
+            const clientName = row.querySelector('td:nth-child(4)').textContent;
+            const amount = row.querySelector('td:nth-child(5)').textContent;
+
+            if (statusCell && statusCell.textContent.toLowerCase().includes('overdue')) {
+                if (Notification.permission === "granted") {
+                    const notification = new Notification("Overdue Invoice Alert!", {
+                        body: `Invoice #${invoiceNo} for ${clientName}\nAmount: ${amount} is overdue`,
+                        icon: "/favicon.ico"
+                    });
+
+                    notification.onclick = function() {
+                        window.focus();
+                    };
+                }
+            }
+        });
+    }
+
+    // Check every 5 minutes
+    setInterval(checkInvoices, 300000);
+
+    // Initial check
+    checkInvoices();
+}
+
+// Run when page loads
+document.addEventListener('DOMContentLoaded', checkOverdueInvoices);
+</script>
 
     <div class="page-content">
         <div class="container-fluid">

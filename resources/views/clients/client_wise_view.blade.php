@@ -70,7 +70,7 @@
                                         $dueDate = \Carbon\Carbon::parse($invoice->due_date);
                                         $today = \Carbon\Carbon::now();
                                         $overDueDays = $today->diffInDays($dueDate, false);
-                                        $overDueText = $overDueDays < 0 ? abs($overDueDays) . ' Days' : ($overDueDays == 0 ? '1 Day' : 'YTD');
+                                        $overDueText = $overDueDays < 0 ? abs($overDueDays) . ' Days' : ($overDueDays == 0 ? '1 Day' : 'Yet To Due');
 
                                         if($invoice->status === 'overdue' || $overDueDays < 0) {
                                             $overdueAmount += $invoice->amount;
@@ -86,7 +86,7 @@
                                         <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}</td>
                                         <td class="{{ ($invoice->status === 'overdue' || $overDueDays < 0) ? 'text-danger fw-bold' : '' }}">
                                             {{ $overDueText }}
-                                        
+
                                         </td>
                                     </tr>
                                     @endforeach

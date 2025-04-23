@@ -22,6 +22,7 @@ Route::name('invoice.')->group(function () {
         Route::get('/invoice/delete/{id}', 'invoiceDelete')->name('delete');
         Route::get('/invoice/paid/{id}', 'invoicePaid')->name('paid');
         Route::get('/invoice/check-duplicate', 'checkDuplicateInvoice')->name('check.duplicate');
+        Route::get('/invoice/check-overdue', 'checkOverdueInvoices')->name('check.overdue');
 
         Route::post('/invoice/store', 'invoiceStore')->name('store');
         Route::post('/invoice/update', 'invoiceUpdate')->name('update');

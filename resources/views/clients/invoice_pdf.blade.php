@@ -68,7 +68,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Invoice Statement</h1>
+        <h1>Sales Invoice Statement</h1>
         <h2>{{ $client->client_name }}</h2>
         <div class="meta-info">
             Payment Cycle: {{ $client->client_payment_cycle }} Days<br>

@@ -68,7 +68,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Purchase Statement</h1>
+        <h1>Purchase Invoice Statement</h1>
         <h2>{{ $supplier->supplier_name }}</h2>
         <div class="meta-info">
             Payment Cycle: {{ $supplier->supplier_payment_cycle }} Days<br>
@@ -82,7 +82,7 @@
             <tr>
                 <th>Sl No</th>
                 <th>Date</th>
-                <th>Purchase Invoice No</th>
+                <th>Invoice No</th>
                 <th>PO#</th>
                 <th>Particular</th>
                 <th class="text-end">Amount</th>
@@ -145,4 +145,4 @@
         Generated on {{ now()->format('d/m/Y H:i:s') }}
     </div>
 </body>
-</html> 
+</html>

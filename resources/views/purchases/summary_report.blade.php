@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Sales Summary Report</title>
+    <title>Purchase Summary Report</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -91,21 +91,21 @@
 </head>
 <body>
     <div class="header">
-        <h1>Sales Summary Report</h1>
+        <h1>Purchase Summary Report</h1>
         <h2>Invoice Tracker System</h2>
     </div>
 
     <div class="meta-info">
         <p><strong>Report Generated:</strong> {{ now()->format('d F Y, h:i A') }}</p>
-        <p><strong>Total Clients:</strong> {{ $clients->count() }}</p>
-        <p><strong>Report Type:</strong> Pending & Overdue Invoices Summary</p>
+        <p><strong>Total Suppliers:</strong> {{ $suppliers->count() }}</p>
+        <p><strong>Report Type:</strong> Pending & Overdue Purchases Summary</p>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th>SL No</th>
-                <th>Client Name</th>
+                <th>Supplier Name</th>
                 <th>Total Pending Amount</th>
                 <th>Over Due Amount</th>
                 <th>Not Due Yet</th>
@@ -118,20 +118,20 @@
                 $totalOverdue = 0;
                 $totalNotDue = 0;
             @endphp
-            @foreach($clients as $index => $client)
+            @foreach($suppliers as $index => $supplier)
                 @php
-                    $totalPending += $client->total_pending_amount;
-                    $totalOverdue += $client->overdue_amount;
-                    $notDueAmount = $client->total_pending_amount - $client->overdue_amount;
+                    $totalPending += $supplier->total_pending_amount;
+                    $totalOverdue += $supplier->overdue_amount;
+                    $notDueAmount = $supplier->total_pending_amount - $supplier->overdue_amount;
                     $totalNotDue += $notDueAmount;
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $client->client_name }}</td>
-                    <td class="text-end amount">{{ number_format($client->total_pending_amount, 2) }}</td>
-                    <td class="text-end amount">{{ number_format($client->overdue_amount, 2) }}</td>
+                    <td>{{ $supplier->supplier_name }}</td>
+                    <td class="text-end amount">{{ number_format($supplier->total_pending_amount, 2) }}</td>
+                    <td class="text-end amount">{{ number_format($supplier->overdue_amount, 2) }}</td>
                     <td class="text-end amount">{{ number_format($notDueAmount, 2) }}</td>
-                    <td class="text-end">{{ $client->client_payment_cycle }} Days</td>
+                    <td class="text-end">{{ $supplier->supplier_payment_cycle }} Days</td>
                 </tr>
             @endforeach
         </tbody>
@@ -164,4 +164,4 @@
         <p>This is a computer-generated document. No signature is required.</p>
     </div>
 </body>
-</html>
+</html> 

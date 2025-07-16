@@ -147,7 +147,9 @@ document.addEventListener('DOMContentLoaded', checkOverdueInvoices);
                                             @endif
                                             <a href="{{ route('invoice.delete', $invoice->id) }}" class="btn btn-danger sm"
                                                 title="Delete Invoice" id="delete"> <i class="fas fa-trash-alt"></i> </a>
-
+                                            <a href="{{ route('invoice.detail', $invoice->id) }}" class="btn btn-dark sm" title="Invoice Detail">
+                                                <i class="fas fa-file-invoice-dollar"></i>
+                                            </a>
                                         </td>
 
                                     </tr>

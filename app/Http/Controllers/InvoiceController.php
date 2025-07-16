@@ -67,8 +67,8 @@ class InvoiceController extends Controller
     public function invoiceUpdate(Request $request){
         $invoiceId = $request->id;
 
-        Invoice::findOrFail($invoiceId)
-        ->update([
+        $invoice = Invoice::findOrFail($invoiceId);
+        $invoice->update([
             'client_id' => $request->client_id,
             'invoice_date' => $request->invoice_date,
             'po_no' => $request->po_no,
@@ -78,6 +78,14 @@ class InvoiceController extends Controller
             'due_date' => $request->due_date,
             'updated_at' => Carbon::now()
         ]);
+
+        // Status logic
+        $now = Carbon::now()->format('Y-m-d');
+        if ($invoice->status === 'overdue' && $request->due_date >= $now) {
+            $invoice->update(['status' => 'pending']);
+        } elseif ($invoice->status === 'pending' && $request->due_date < $now) {
+            $invoice->update(['status' => 'overdue']);
+        }
 
         $notification = [
             'message' => "Invoice Updated Successfully",
@@ -142,5 +150,11 @@ class InvoiceController extends Controller
             });
 
         return response()->json($overdueInvoices);
+    }
+
+    public function invoiceDetail($id)
+    {
+        $invoice = \App\Models\Invoice::with('client')->findOrFail($id);
+        return view('invoices.invoice_detail', compact('invoice'));
     }
 }

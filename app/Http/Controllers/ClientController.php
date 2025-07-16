@@ -87,7 +87,7 @@ class ClientController extends Controller
             ->whereIn('status', ['pending', 'overdue'])
             ->orderBy('invoice_date', 'asc')
             ->get();
-        
+
         return view('clients.client_wise_view', compact('client', 'invoices'));
     }
 

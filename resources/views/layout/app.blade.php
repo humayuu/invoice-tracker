@@ -15,9 +15,9 @@
     <meta content="Themesdesign" name="author" />
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
-     <!-- Select 2 -->
-     <link href="{{ asset('assets/libs/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css">
-     <!-- end Select 2  -->
+    <!-- Select 2 -->
+    <link href="{{ asset('assets/libs/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css">
+    <!-- end Select 2  -->
 
     <!-- jquery.vectormap css -->
     <link href="{{ asset('assets/libs/admin-resources/jquery.vectormap/jquery-jvectormap-1.2.2.css') }}"
@@ -105,7 +105,7 @@
                             <li class="{{ str_starts_with(Route::current()->getName(), 'invoice.') ? 'active' : '' }}">
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="ri-file-list-line"></i> <!-- Invoice-specific icon -->
-                                    <span>Invoices</span>
+                                    <span>Sales Invoices</span>
                                 </a>
                                 <ul class="sub-menu">
                                     <li class="{{ Route::current()->getName() == 'invoice.all' ? 'active' : '' }}">
@@ -134,11 +134,62 @@
                                 </ul>
                             </li>
 
-                            <li>
-                                <a href="{{ route('clients.summary.report') }}">
-                                    <i class="ri-file-chart-line me-2"></i>Summary Report
+                            <!-- Purchases Menu -->
+                            <li class="{{ str_starts_with(Route::current()->getName(), 'purchase.') ? 'active' : '' }}">
+                                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                                    <i class="ri-shopping-cart-line"></i> <!-- Purchase-specific icon -->
+                                    <span>Purchase Invoices</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li class="{{ Route::current()->getName() == 'purchase.all' ? 'active' : '' }}">
+                                        <a href="{{ route('purchase.all') }}">All Purchases</a>
+                                    </li>
+                                    <li class="{{ Route::current()->getName() == 'purchase.add' ? 'active' : '' }}">
+                                        <a href="{{ route('purchase.add') }}">Add Purchase</a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <!-- Suppliers Menu -->
+                            <li
+                                class="{{ str_starts_with(Route::current()->getName(), 'suppliers.') ? 'active' : '' }}">
+                                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                                    <i class="ri-truck-line"></i> <!-- Supplier-specific icon -->
+                                    <span>Suppliers</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li class="{{ Route::current()->getName() == 'suppliers.all' ? 'active' : '' }}">
+                                        <a href="{{ route('suppliers.all') }}">All Suppliers</a>
+                                    </li>
+                                    <li class="{{ Route::current()->getName() == 'suppliers.add' ? 'active' : '' }}">
+                                        <a href="{{ route('suppliers.add') }}">Add Supplier</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!-- Reports Section Heading (Not clickable, not active) -->
+                            <li class="nav-item">
+                                <div class="px-3 py-2 mt-3 mb-2 border-bottom fw-semibold text-uppercase text-primary small"
+                                    style="letter-spacing: 0.5px;">
+                                    <i class="ri-folder-chart-line me-1"></i> Reports
+                                </div>
+                            </li>
+
+                            <!-- Purchase Summary Link -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('purchase.summary.report') }}">
+                                    <i class="ri-file-chart-line me-2"></i> Purchase Summary
                                 </a>
                             </li>
+
+                            <!-- Sales Summary Link -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('clients.summary.report') }}">
+                                    <i class="ri-file-chart-line me-2"></i> Sales Summary
+                                </a>
+                            </li>
+
+
+
                         </ul>
 
 
@@ -167,7 +218,7 @@
                     </div>
                     <div class="col-sm-6">
                         <div class="text-sm-end d-none d-sm-block">
-                            Crafted  by Humayun
+                            Crafted by Humayun
                         </div>
                     </div>
                 </div>
@@ -213,10 +264,10 @@
 
     <script src="{{ asset('assets/js/pages/dashboard.init.js') }}"></script>
 
-        <!--  For Select2 -->
-        <script src="{{ asset('assets/libs/select2/js/select2.min.js') }}"></script>
-        <script src="{{ asset('assets/js/pages/form-advanced.init.js') }}"></script>
-        <!-- end  For Select2 -->
+    <!--  For Select2 -->
+    <script src="{{ asset('assets/libs/select2/js/select2.min.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/form-advanced.init.js') }}"></script>
+    <!-- end  For Select2 -->
 
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>

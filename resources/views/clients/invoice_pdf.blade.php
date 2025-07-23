@@ -95,32 +95,29 @@
                 $totalAmount = 0;
                 $overdueAmount = 0;
             @endphp
-
             @foreach($invoices as $key => $invoice)
-                @php
-                    $totalAmount += $invoice->amount;
-                    $dueDate = \Carbon\Carbon::parse($invoice->due_date);
-                    $today = \Carbon\Carbon::now();
-                    $overDueDays = $today->diffInDays($dueDate, false);
-                    $overDueText = $overDueDays < 0 ? abs($overDueDays) . ' Days' : ($overDueDays == 0 ? '1 Day' : 'Yet To Due');
-
-                    if($invoice->status === 'overdue' || $overDueDays < 0) {
-                        $overdueAmount += $invoice->amount;
-                    }
-                @endphp
-                <tr class="{{ ($invoice->status === 'overdue' || $overDueDays < 0) ? 'overdue' : '' }}">
-                    <td>{{ $key + 1 }}</td>
-                    <td>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d/m/Y') }}</td>
-                    <td>{{ $invoice->invoice_no }}</td>
-                    <td>{{ $invoice->po_no }}</td>
-                    <td>{{ $invoice->description }}</td>
-                    <td class="text-end">{{ number_format($invoice->amount, 0, '.', ',') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}</td>
-                    <td class="{{ ($invoice->status === 'overdue' || $overDueDays < 0) ? 'text-danger' : '' }}">
-                        {{ $overDueText }}
-
-                    </td>
-                </tr>
+            @php
+                $totalAmount += $invoice->amount;
+                $dueDate = \Carbon\Carbon::parse($invoice->due_date);
+                $today = \Carbon\Carbon::now();
+                $overDueDays = $today->diffInDays($dueDate, false);
+                $overDueText = $overDueDays < 0 ? abs($overDueDays) . ' Days' : ($overDueDays == 0 ? '1 Day' : 'Yet To Due');
+                if($invoice->status === 'overdue' || $overDueDays < 0) {
+                    $overdueAmount += $invoice->amount;
+                }
+            @endphp
+            <tr class="{{ ($invoice->status === 'overdue' || $overDueDays < 0) ? 'overdue' : '' }}">
+                <td>{{ $key + 1 }}</td>
+                <td>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d/m/Y') }}</td>
+                <td>{{ $invoice->invoice_no }}</td>
+                <td>{{ $invoice->po_no }}</td>
+                <td>{{ $invoice->description }}</td>
+                <td class="text-end">{{ number_format($invoice->amount, 0, '.', ',') }}</td>
+                <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}</td>
+                <td class="{{ ($invoice->status === 'overdue' || $overDueDays < 0) ? 'text-danger' : '' }}">
+                    {{ $overDueText }}
+                </td>
+            </tr>
             @endforeach
         </tbody>
     </table>

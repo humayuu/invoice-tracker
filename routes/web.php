@@ -51,6 +51,9 @@ Route::name('clients.')->group(function () {
     });
 });
 
+Route::post('/clients/{client}/payments', [App\Http\Controllers\ClientController::class, 'storePayment'])->name('clients.payments.store');
+Route::post('/clients/{client}/payments/clear', [App\Http\Controllers\ClientController::class, 'clearClientPayments'])->name('clients.payments.clear');
+
 // ----------------------------- Clients All Routes Ends Here --------------------------------------//
 
 // ----------------------------- Suppliers All Routes Starts Here --------------------------------------//
@@ -68,6 +71,8 @@ Route::name('suppliers.')->group(function () {
 
 Route::get('/supplier/{id}/purchases-report', [App\Http\Controllers\PurchaseController::class, 'supplierWiseView'])->name('suppliers.purchases.report');
 Route::get('/supplier/{id}/purchase-pdf', [App\Http\Controllers\PurchaseController::class, 'generateSupplierPDF'])->name('suppliers.purchase.pdf');
+Route::post('/suppliers/{supplier}/payments', [App\Http\Controllers\PurchaseController::class, 'storeSupplierPayment'])->name('suppliers.payments.store');
+Route::post('/suppliers/{supplier}/payments/clear', [App\Http\Controllers\PurchaseController::class, 'clearSupplierPayments'])->name('suppliers.payments.clear');
 
 // ----------------------------- Suppliers All Routes Ends Here --------------------------------------//
 

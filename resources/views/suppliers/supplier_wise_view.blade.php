@@ -27,6 +27,99 @@
             </div>
         </div>
 
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Payment Summary</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Total Due</span>
+                                <span class="fw-bold">{{ number_format($total_due, 2) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Amount Paid</span>
+                                <span class="fw-bold text-success">{{ number_format($amount_paid, 2) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Remaining Balance</span>
+                                <span class="fw-bold text-danger">{{ number_format($remaining_balance, 2) }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Add Payment</h5>
+                        <form method="POST" action="{{ route('suppliers.payments.store', $supplier->id) }}">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <input type="number" step="0.01" min="0.01" name="amount" id="amount" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="purchase_ids" class="form-label">Apply To Purchases</label>
+                                <select name="purchase_ids[]" id="purchase_ids" class="form-select" multiple required>
+                                    @foreach($purchases as $purchase)
+                                        <option value="{{ $purchase->id }}">
+                                            #{{ $purchase->purchase_invoice_no }} - Due: {{ number_format($purchase->remaining_balance, 2) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Select one or more purchases to apply this payment.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="note" class="form-label">Note (optional)</label>
+                                <textarea name="note" id="note" class="form-control"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Payment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5>Payment History</h5>
+                            <form method="POST" action="{{ route('suppliers.payments.clear', $supplier->id) }}" onsubmit="return confirm('Are you sure you want to clear all payment history? This cannot be undone.');">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-sm">Clear Payment History</button>
+                            </form>
+                        </div>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Purchases</th>
+                                    <th>Note</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($payment_history->where('hidden', false) as $payment)
+                                    <tr>
+                                        <td>{{ $payment->created_at->format('d-m-Y') }}</td>
+                                        <td>{{ number_format($payment->amount, 2) }}</td>
+                                        <td>
+                                            @foreach($payment->purchases as $pur)
+                                                <span class="badge bg-info">#{{ $pur->purchase_invoice_no }} ({{ number_format($pur->pivot->amount_applied, 2) }})</span>
+                                            @endforeach
+                                        </td>
+                                        <td>{{ $payment->note }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-12" id="printArea">
                 <!-- Print Header - Only visible when printing -->
@@ -52,6 +145,8 @@
                                         <th>PO#</th>
                                         <th>Particular</th>
                                         <th class="text-end">Amount</th>
+                                        <th class="text-end">Amount Paid</th>
+                                        <th class="text-end">Remaining Balance</th>
                                         <th>Due Date</th>
                                         <th>Over Due Days</th>
                                     </tr>
@@ -79,6 +174,8 @@
                                         <td>{{ $purchase->po_no }}</td>
                                         <td>{{ $purchase->description }}</td>
                                         <td class="text-end">{{ number_format($purchase->amount, 0, '.', ',') }}</td>
+                                        <td class="text-end text-success">{{ number_format($purchase->amount_paid, 0, '.', ',') }}</td>
+                                        <td class="text-end text-danger">{{ number_format($purchase->remaining_balance, 0, '.', ',') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($purchase->due_date)->format('d/m/Y') }}</td>
                                         <td class="{{ ($purchase->status === 'overdue' || $overDueDays < 0) ? 'text-danger fw-bold' : '' }}">
                                             {{ $overDueText }}
@@ -87,20 +184,35 @@
                                     @endforeach
                                 </tbody>
                                 <tfoot>
+                                    @php
+                                        $totalPending = 0;
+                                        $overduePending = 0;
+                                    @endphp
+                                    @foreach($purchases as $purchase)
+                                        @php
+                                            $totalPending += $purchase->remaining_balance;
+                                            $dueDate = \Carbon\Carbon::parse($purchase->due_date);
+                                            $today = \Carbon\Carbon::now();
+                                            $overDueDays = $today->diffInDays($dueDate, false);
+                                            if($purchase->status === 'overdue' || $overDueDays < 0) {
+                                                $overduePending += $purchase->remaining_balance;
+                                            }
+                                        @endphp
+                                    @endforeach
                                     <tr class="border-top">
                                         <td colspan="5" class="text-end fw-bold">Total Pending Amount:</td>
-                                        <td class="text-end fw-bold">{{ number_format($totalAmount, 0, '.', ',') }}</td>
-                                        <td colspan="2"></td>
+                                        <td class="text-end fw-bold">{{ number_format($totalPending, 0, '.', ',') }}</td>
+                                        <td colspan="3"></td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" class="text-end fw-bold">Overdue Amount:</td>
-                                        <td class="text-end fw-bold text-danger">{{ number_format($overdueAmount, 0, '.', ',') }}</td>
-                                        <td colspan="2"></td>
+                                        <td class="text-end fw-bold text-danger">{{ number_format($overduePending, 0, '.', ',') }}</td>
+                                        <td colspan="3"></td>
                                     </tr>
                                     <tr>
                                         <td colspan="5" class="text-end fw-bold">Not Yet Due:</td>
-                                        <td class="text-end fw-bold text-success">{{ number_format($totalAmount - $overdueAmount, 0, '.', ',') }}</td>
-                                        <td colspan="2"></td>
+                                        <td class="text-end fw-bold text-success">{{ number_format($totalPending - $overduePending, 0, '.', ',') }}</td>
+                                        <td colspan="3"></td>
                                     </tr>
                                 </tfoot>
                             </table>

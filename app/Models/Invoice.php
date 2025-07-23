@@ -17,4 +17,21 @@ class Invoice extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+    public function payments()
+    {
+        return $this->belongsToMany(Payment::class, 'invoice_payment')
+            ->withPivot('amount_applied')
+            ->withTimestamps();
+    }
+
+    public function getAmountPaidAttribute()
+    {
+        return $this->payments->sum('pivot.amount_applied');
+    }
+
+    public function getRemainingBalanceAttribute()
+    {
+        return $this->total_amount - $this->amount_paid;
+    }
 }

@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Payment;
 
 class ClientController extends Controller
 {
@@ -82,13 +83,48 @@ class ClientController extends Controller
 
     public function clientWiseView($id)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::with(['payments', 'invoices.payments'])->findOrFail($id);
         $invoices = Invoice::where('client_id', $id)
             ->whereIn('status', ['pending', 'overdue'])
             ->orderBy('invoice_date', 'asc')
             ->get();
+        $total_due = $invoices->sum('total_amount');
+        $amount_paid = $invoices->sum('amount_paid');
+        $remaining_balance = $total_due - $amount_paid;
+        $payment_history = $client->payments()->with('invoices')->latest()->get();
+        return view('clients.client_wise_view', compact('client', 'invoices', 'total_due', 'amount_paid', 'remaining_balance', 'payment_history'));
+    }
 
-        return view('clients.client_wise_view', compact('client', 'invoices'));
+    public function storePayment(Request $request, $clientId)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'invoice_ids' => 'required|array',
+            'invoice_ids.*' => 'exists:invoices,id',
+        ]);
+        $client = Client::findOrFail($clientId);
+        $amount = $request->amount;
+        $invoiceIds = $request->invoice_ids;
+        $note = $request->note;
+        $payment = Payment::create([
+            'client_id' => $client->id,
+            'amount' => $amount,
+            'note' => $note,
+        ]);
+        // Allocate payment to invoices
+        $remaining = $amount;
+        foreach (Invoice::whereIn('id', $invoiceIds)->orderBy('due_date')->get() as $invoice) {
+            $toPay = min($invoice->remaining_balance, $remaining);
+            if ($toPay <= 0) continue;
+            $payment->invoices()->attach($invoice->id, ['amount_applied' => $toPay]);
+            $remaining -= $toPay;
+            if ($remaining <= 0) break;
+        }
+        $notification = [
+            'message' => 'Payment recorded successfully!',
+            'alert-type' => 'success',
+        ];
+        return redirect()->route('clients.client.wise.view', $client->id)->with($notification);
     }
 
     public function generateInvoicePDF($id)
@@ -129,5 +165,19 @@ class ClientController extends Controller
         ]);
 
         return $pdf->download('client_summary_report.pdf');
+    }
+
+    public function clearClientPayments($clientId)
+    {
+        $client = \App\Models\Client::findOrFail($clientId);
+        foreach ($client->payments as $payment) {
+            $payment->hidden = true;
+            $payment->save();
+        }
+        $notification = [
+            'message' => 'Payment history hidden successfully! Balances remain reduced.',
+            'alert-type' => 'success',
+        ];
+        return redirect()->route('clients.client.wise.view', $client->id)->with($notification);
     }
 }

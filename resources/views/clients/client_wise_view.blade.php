@@ -26,7 +26,6 @@
                 </div>
             </div>
         </div>
-
         <div class="row">
             <div class="col-12" id="printArea">
                 <!-- Print Header - Only visible when printing -->
@@ -39,7 +38,6 @@
                         <div>Status: Pending & Overdue Invoices Only</div>
                     </div>
                 </div>
-
                 <div class="card shadow-sm">
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -56,22 +54,18 @@
                                         <th>Over Due Days</th>
                                     </tr>
                                 </thead>
-
                                 <tbody>
                                     @php
                                         $totalAmount = 0;
                                         $overdueAmount = 0;
                                     @endphp
-
                                     @foreach($invoices as $key => $invoice)
                                     @php
                                         $totalAmount += $invoice->amount;
-
                                         $dueDate = \Carbon\Carbon::parse($invoice->due_date);
                                         $today = \Carbon\Carbon::now();
                                         $overDueDays = $today->diffInDays($dueDate, false);
                                         $overDueText = $overDueDays < 0 ? abs($overDueDays) . ' Days' : ($overDueDays == 0 ? '1 Day' : 'Yet To Due');
-
                                         if($invoice->status === 'overdue' || $overDueDays < 0) {
                                             $overdueAmount += $invoice->amount;
                                         }
@@ -86,7 +80,6 @@
                                         <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}</td>
                                         <td class="{{ ($invoice->status === 'overdue' || $overDueDays < 0) ? 'text-danger fw-bold' : '' }}">
                                             {{ $overDueText }}
-
                                         </td>
                                     </tr>
                                     @endforeach
@@ -223,18 +216,14 @@ $(document).ready(function() {
     $('.print-button').on('click', function() {
         window.print();
     });
-
     // Export to Excel functionality
     $('.export-button').on('click', function() {
         let date = new Date().toISOString().split('T')[0];
         let fileName = `${date}_{{ $client->client_name }}_pending_invoices.xls`;
-
         // Get the table
         let table = document.getElementById('invoiceTable');
-
         // Convert table to Excel format
         let wb = XLSX.utils.table_to_book(table, {sheet: "Invoices"});
-
         // Save the file
         XLSX.writeFile(wb, fileName);
     });

@@ -24,4 +24,21 @@ class Purchase extends Model
     {
         return $this->belongsTo(\App\Models\Supplier::class);
     }
+
+    public function payments()
+    {
+        return $this->belongsToMany(\App\Models\Payment::class, 'purchase_payment')
+            ->withPivot('amount_applied')
+            ->withTimestamps();
+    }
+
+    public function getAmountPaidAttribute()
+    {
+        return $this->payments->sum('pivot.amount_applied');
+    }
+
+    public function getRemainingBalanceAttribute()
+    {
+        return $this->amount - $this->amount_paid;
+    }
 }

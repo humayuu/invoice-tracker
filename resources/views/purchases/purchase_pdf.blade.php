@@ -6,69 +6,83 @@
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 11px;
-            margin: 0;
-            padding: 30px 1px;
-            line-height: 1.3;
+            font-size: 13px;
+            line-height: 1.5;
+            background: #fff;
         }
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
         .header h1 {
-            font-size: 18px;
-            margin-bottom: 4px;
+            font-size: 28px;
+            margin: 0 0 12px;
+            font-weight: bold;
         }
         .header h2 {
-            font-size: 14px;
-            margin: 0;
+            font-size: 20px;
+            margin: 0 0 8px;
+            color: #333;
+            font-weight: bold;
         }
         .meta-info {
-            font-size: 10px;
-            margin-top: 5px;
+            margin-bottom: 28px;
+            font-size: 13px;
         }
         table {
-            width: 100%;
+            width: 1000px;
             border-collapse: collapse;
-            table-layout: auto;
-            word-wrap: break-word;
+            margin-bottom: 32px;
         }
         th, td {
-            border: 1px solid #ccc;
-            padding: 6px 8px;
-            font-size: 10px;
-            vertical-align: top;
+            border: 1.5px solid #bbb;
+            padding: 12px 10px;
+            font-size: 14px;
         }
         th {
-            background-color: #f1f1f1;
+            background-color: #f4f6fa;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
         .text-end {
             text-align: right;
         }
         .text-danger {
             color: #dc3545;
+            font-weight: bold;
         }
         .text-success {
             color: #28a745;
+            font-weight: bold;
         }
         .overdue {
-            background-color: #fff1f1;
-        }
-        .totals {
-            margin-top: 30px;
-        }
-        .totals table {
-            width: 60%;
-            margin-left: auto;
+            background-color: #fff3f3 !important;
         }
         .footer {
             position: fixed;
-            bottom: 10px;
-            left: 0;
-            right: 0;
+            bottom: 0;
+            width: 100%;
             text-align: center;
-            font-size: 9px;
-            color: #888;
+            font-size: 12px;
+            color: #666;
+        }
+        .totals {
+            margin-top: 32px;
+        }
+        .totals table {
+            width: 100%;
+            margin-left: auto;
+            border: 1.5px solid #bbb;
+        }
+        .totals td {
+            padding: 12px 10px;
+            font-size: 15px;
+        }
+        .totals tr td:first-child {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -86,16 +100,16 @@
     <table>
         <thead>
             <tr>
-                <th style="width:5%">Sl.No</th>
-                <th style="width:9%">Date</th>
-                <th style="width:12%">Invoice No</th>
-                <th style="width:7%">PO#</th>
-                <th style="width:33%">Particular</th>
-                <th style="width:10%" class="text-end">Amount</th>
-                <th style="width:10%" class="text-end">Amount Paid</th>
-                <th style="width:10%" class="text-end">Remaining Balance</th>
-                <th style="width:7%">Due Date</th>
-                <th style="width:7%">Overdue Days</th>
+                <th>Sl No</th>
+                <th>Date</th>
+                <th>Invoice No</th>
+                <th>PO#</th>
+                <th>Particular</th>
+                <th class="text-end">Amount</th>
+                <th class="text-end">Amount Paid</th>
+                <th class="text-end">Remaining Balance</th>
+                <th>Due Date</th>
+                <th>Over Due Days</th>
             </tr>
         </thead>
         <tbody>
@@ -126,7 +140,9 @@
                     <td class="text-end text-success">{{ number_format($purchase->amount_paid, 0, '.', ',') }}</td>
                     <td class="text-end text-danger">{{ number_format($purchase->remaining_balance, 0, '.', ',') }}</td>
                     <td>{{ \Carbon\Carbon::parse($purchase->due_date)->format('d/m/Y') }}</td>
-                    <td class="{{ ($purchase->status === 'overdue' || $overDueDays < 0) ? 'text-danger' : '' }}">{{ $overDueText }}</td>
+                    <td class="{{ ($purchase->status === 'overdue' || $overDueDays < 0) ? 'text-danger' : '' }}">
+                        {{ $overDueText }}
+                    </td>
                 </tr>
             @endforeach
         </tbody>

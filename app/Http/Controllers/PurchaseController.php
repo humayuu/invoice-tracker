@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Supplier;
 use App\Models\Purchase;
 use Illuminate\Http\Request;
+use App\Models\Payment;
 
 class PurchaseController extends Controller
 {
@@ -128,17 +129,47 @@ class PurchaseController extends Controller
 
     public function supplierWiseView($id)
     {
-        // Update overdue statuses before displaying
-        $now = \Carbon\Carbon::now();
-        \App\Models\Purchase::where('status', 'pending')
-            ->where('due_date', '<', $now->format('Y-m-d'))
-            ->update(['status' => 'overdue']);
-
-        $supplier = \App\Models\Supplier::findOrFail($id);
+        $supplier = \App\Models\Supplier::with(['payments', 'purchases.payments'])->findOrFail($id);
         $purchases = \App\Models\Purchase::where('supplier_id', $id)
             ->orderBy('purchase_date', 'asc')
             ->get();
-        return view('suppliers.supplier_wise_view', compact('supplier', 'purchases'));
+        $total_due = $purchases->sum('amount');
+        $amount_paid = $purchases->sum('amount_paid');
+        $remaining_balance = $total_due - $amount_paid;
+        $payment_history = $supplier->payments()->with('purchases')->latest()->get();
+        return view('suppliers.supplier_wise_view', compact('supplier', 'purchases', 'total_due', 'amount_paid', 'remaining_balance', 'payment_history'));
+    }
+
+    public function storeSupplierPayment(Request $request, $supplierId)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'purchase_ids' => 'required|array',
+            'purchase_ids.*' => 'exists:purchases,id',
+        ]);
+        $supplier = \App\Models\Supplier::findOrFail($supplierId);
+        $amount = $request->amount;
+        $purchaseIds = $request->purchase_ids;
+        $note = $request->note;
+        $payment = Payment::create([
+            'supplier_id' => $supplier->id,
+            'amount' => $amount,
+            'note' => $note,
+        ]);
+        // Allocate payment to purchases
+        $remaining = $amount;
+        foreach (\App\Models\Purchase::whereIn('id', $purchaseIds)->orderBy('due_date')->get() as $purchase) {
+            $toPay = min($purchase->remaining_balance, $remaining);
+            if ($toPay <= 0) continue;
+            $payment->purchases()->attach($purchase->id, ['amount_applied' => $toPay]);
+            $remaining -= $toPay;
+            if ($remaining <= 0) break;
+        }
+        $notification = [
+            'message' => 'Payment recorded successfully!',
+            'alert-type' => 'success',
+        ];
+        return redirect()->route('suppliers.purchases.report', $supplier->id)->with($notification);
     }
 
     public function purchasePaid($id)
@@ -176,6 +207,21 @@ class PurchaseController extends Controller
         ]);
 
         return $pdf->download($supplier->supplier_name . '_purchase_statement.pdf');
+    }
+
+    public function clearSupplierPayments($supplierId)
+    {
+        $supplier = \App\Models\Supplier::findOrFail($supplierId);
+        // Hide payment history instead of deleting payments
+        foreach ($supplier->payments as $payment) {
+            $payment->hidden = true;
+            $payment->save();
+        }
+        $notification = [
+            'message' => 'Payment history hidden successfully! Balances remain reduced.',
+            'alert-type' => 'success',
+        ];
+        return redirect()->route('suppliers.purchases.report', $supplier->id)->with($notification);
     }
     // Route: Route::get('/supplier/{id}/purchase-pdf', [PurchaseController::class, 'generateSupplierPDF'])->name('suppliers.purchase.pdf');
 }

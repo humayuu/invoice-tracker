@@ -106,15 +106,21 @@ class PurchaseController extends Controller
     // Purchase Summary Report
     public function generateSummaryReport()
     {
-        $suppliers = Supplier::with(['purchases'])->get();
+        $suppliers = Supplier::with(['purchases.payments'])->get();
 
         $suppliers = $suppliers->map(function($supplier) {
-            $total_pending_amount = $supplier->purchases->sum('amount');
-            // All purchases are 'pending' in this system, so overdue = due_date < today
-            $overdue_amount = $supplier->purchases->filter(function($purchase) {
-                return Carbon::parse($purchase->due_date)->isPast();
-            })->sum('amount');
-
+            $total_pending_amount = 0;
+            $overdue_amount = 0;
+            $now = Carbon::now();
+            foreach ($supplier->purchases as $purchase) {
+                $amount_paid = $purchase->payments->sum('pivot.amount_applied');
+                $remaining_balance = $purchase->amount - $amount_paid;
+                if ($remaining_balance <= 0) continue;
+                $total_pending_amount += $remaining_balance;
+                if (Carbon::parse($purchase->due_date)->isPast()) {
+                    $overdue_amount += $remaining_balance;
+                }
+            }
             $supplier->total_pending_amount = $total_pending_amount;
             $supplier->overdue_amount = $overdue_amount;
             return $supplier;
@@ -198,6 +204,7 @@ class PurchaseController extends Controller
     {
         $supplier = \App\Models\Supplier::findOrFail($id);
         $purchases = \App\Models\Purchase::where('supplier_id', $id)
+            ->with('payments')
             ->orderBy('purchase_date', 'asc')
             ->get();
 
